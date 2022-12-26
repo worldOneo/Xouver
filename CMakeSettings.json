@@ -1,0 +1,9 @@
+{
+  "configurations": [
+    {
+      "name": "default",
+      "addressSanitizerEnabled": true,
+      "inheritEnvironments": []
+    }
+  ]
+}
