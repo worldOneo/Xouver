@@ -15,7 +15,7 @@ private:
 	bool _isHalted;
 
 	std::stack<int> ptrs;
-	std::stack<int*> instructions;
+	std::stack<unsigned char*> instructions;
 	std::vector<std::string> functionCallVector;
 	std::stack<xclass*> classes;
 	std::stack<xvalue*> stack;
@@ -26,7 +26,7 @@ public:
 	runtime_process(void* rt);
 
 	xvalue* run();	
-	void setFunction(std::string signature, int* instructions);
+	void setFunction(std::string signature, unsigned char* instructions);
 	void returnFunction();
 	void setNativeFunction(std::string signature, void (*fn)(void*));
 	bool isHalted();

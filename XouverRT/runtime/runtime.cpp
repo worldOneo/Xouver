@@ -6,6 +6,8 @@
 #include <string>
 #include <iostream>
 
+#include <memory/memory.h>
+
 #include <runtime/runtimeprocess.h>
 #include <object/object.h>
 #include <common.h>
@@ -56,11 +58,12 @@ std::string runtime::getException() {
 }
 
 void runtime::putNativeFunction(std::string signature, void (*fn)(void*)) {
-	nativeFunctions.insert(std::pair<std::string, void (__cdecl*)(void*)>(signature, fn));
+	nativeFunctions.emplace(std::pair<std::string, void (__cdecl*)(void*)>(signature, fn));
 }
 
-void runtime::putFunction(std::string signature, int* instructions) {
-	functions.insert(std::pair<std::string, int*>(signature,instructions));
+void runtime::putFunction(std::string signature, unsigned char* instructions, int scopeSize) {
+	functions.emplace(std::pair<std::string, unsigned char*>(signature,instructions));
+	scopeSizes.emplace(std::pair<std::string, int>(signature, scopeSize));
 }
 
 void runtime::mapFunction(int id, std::string signature) {
@@ -89,10 +92,8 @@ void runtime::callFunction(std::string signature) {
 		(*current)->setNativeFunction(signature, nativeFunctions[signature]);
 	}
 	else {
-		std::vector<xvalue*> scope;
-		/*for (int i = 0; i < argCount; i++) {
-			scope.push_back(new ptr(args[i]));
-		}*/
+		xvalue** scope;
+		scope = (xvalue**) allocate(sizeof(xvalue*) * scopeSizes[signature]);
 		(*current)->localScopes.push(scope);
 		(*current)->setFunction(signature, functions[signature]);
 	}

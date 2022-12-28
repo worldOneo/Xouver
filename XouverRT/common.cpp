@@ -40,7 +40,7 @@ void* createRuntime() {
 	xclass* c = (xclass*)allocate(sizeof(xclass));
 	*c = xclass(rt, pool, 2, 0);
 
-	int* instructions = new int[] {
+	unsigned char* instructions = new unsigned char[] {
 		OP_CLOAD, 0,
 		OP_CLOAD, 1,
 		OP_IFEQ,
@@ -53,7 +53,7 @@ void* createRuntime() {
 
 	registerFunction(rt, "int:ToString()#void", *nativeInt::toString);
 	registerFunction(rt, "object:Equals()#void", *nativeObject::equals);
-	registerFunction(rt, "xouver:Main()#void", instructions);
+	registerFunction(rt, "xouver:Main()#void", instructions, 0);
 
 	rt->mapFunction(0, "xouver:Main()#void");
 	rt->mapFunction(1, "object:Equals()#void");
@@ -117,10 +117,10 @@ void registerFunction(void* _rt, const char* signature, void (*fn)(void*)) {
 	rt->putNativeFunction(std::string(signature), fn);
 }
 
-void registerFunction(void* _rt, const char* signature, int* instructions) {
+void registerFunction(void* _rt, const char* signature, unsigned char* instructions, int scopeSize) {
 	convertRT(_rt);
 
-	rt->putFunction(signature, instructions);
+	rt->putFunction(signature, instructions, scopeSize);
 }
 
 void callFunction(void* _rt, const char* signature) {

@@ -504,7 +504,8 @@ xvalue* runtime_process::run() {
 		}
 #endif
 		default:
-			std::cout << "Unknown Instruction: " << instructions.top()[ptrs.top()] << "\n";
+			int inst = instructions.top()[ptrs.top()];
+			std::cout << "Unknown opcode: " << instructions.top()[ptrs.top()] << "\n";
 			_isHalted = true;
 			break;
 		}
@@ -525,7 +526,7 @@ void runtime_process::setNativeFunction(std::string signature, void (*fn)(void*)
 	}
 }
 
-void runtime_process::setFunction(std::string signature, int* instructions) {
+void runtime_process::setFunction(std::string signature, unsigned char* instructions) {
 	this->functionCallVector.push_back(signature.c_str());
 	this->instructions.push(instructions);
 	this->ptrs.push(-1);

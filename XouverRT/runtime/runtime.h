@@ -21,7 +21,8 @@ private:
 	classmanager classManager;
 
 	std::map<std::string, void (__cdecl*) (void*)> nativeFunctions;
-	std::map<std::string, int*> functions;
+	std::map<std::string, unsigned char*> functions;
+	std::map<std::string, int> scopeSizes;
 	function_map functionmap;
 	class_map classmap;
 
@@ -36,7 +37,7 @@ public:
 	std::string getException();
 
 	void putNativeFunction(std::string signature, void (*fn)(void*));
-	void putFunction(std::string signature, int* instructions);
+	void putFunction(std::string signature, unsigned char* instructions, int scopeSize);
 	void mapFunction(int id, std::string signature);
 	void setClass(xclass* c);
 	void mapClass(int id, std::string path);
