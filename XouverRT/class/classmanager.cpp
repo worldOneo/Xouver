@@ -16,7 +16,3 @@ void classmanager::clearClasses() {
 		classes.erase(it);
 	}
 }
-
-classmanager::~classmanager() {
-	clearClasses();
-}

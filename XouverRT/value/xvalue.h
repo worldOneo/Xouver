@@ -7,28 +7,7 @@
 struct xvalue {
 	valuetype type;
 	xvalues value;
-
-	xvalue(xint v) {
-		type = valuetype::INT;
-		value.i = v;
-	}
-	xvalue(xfloat v) {
-		type = valuetype::FLOAT;
-		value.f = v;
-	}
-	xvalue(xbool v) {
-		type = valuetype::BOOL;
-		value.b = v;
-	}
-	xvalue(xchar v) {
-		type = valuetype::BOOL;
-		value.c = v;
-	}
-	xvalue(xobject v) {
-		type = valuetype::OBJECT;
-		value.o = v;
-	}
-
+	int refcount = 0;
 
 	bool operator == (xvalue v) {
 		xvalues val = v.value;

@@ -5,18 +5,19 @@
 #include <string>
 #include <vector>
 
-#include <memory/memorymanager.h>
+#include "value/xvalue.h"
 
 class xclass {
 private:
 	void* rt;
-	ptr** pool;
+	xvalue** pool;
 	int poolSize;
 	int scopeSize;
 
 public:
-	xclass(void* rt, ptr** pool, int poolSize, int scopeSize);
-	ptr* getConstant(int index);
+	xclass(void* rt, xvalue** pool, int poolSize, int scopeSize);
+	xvalue* getConstant(int index);
+	int getScopeSize();
 };
 
 #endif

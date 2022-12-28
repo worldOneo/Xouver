@@ -6,6 +6,9 @@
 #include <class/xclass.h>
 #include <class/classManager.h>
 
+#include <mapping/functionmap.h>
+#include <mapping/classmap.h>
+
 #include <stack>
 #include <string>
 #include <map>
@@ -17,8 +20,10 @@ private:
 	std::vector<runtime_process*> processes;
 	classmanager classManager;
 
-	std::map<std::string, void (__cdecl*) (void*, xfunc_data*)> nativeFunctions;
-	std::map<std::string, unsigned char*> functions;
+	std::map<std::string, void (__cdecl*) (void*)> nativeFunctions;
+	std::map<std::string, int*> functions;
+	function_map functionmap;
+	class_map classmap;
 
 	std::string exception;
 public:
@@ -30,10 +35,14 @@ public:
 
 	std::string getException();
 
-	void putNativeFunction(std::string signature, void (*fn)(void*, xfunc_data*));
-	void putFunction(std::string signature, unsigned char* instructions);
+	void putNativeFunction(std::string signature, void (*fn)(void*));
+	void putFunction(std::string signature, int* instructions);
+	void mapFunction(int id, std::string signature);
 	void setClass(xclass* c);
-	void callFunction(std::string signature, xvalue* args, int argCount);
+	void mapClass(int id, std::string path);
+	xclass* getClass(int id);
+	void callFunction(int id);
+	void callFunction(std::string signature);
 	bool haltProcess();
 	void switchProcess();
 	void throwError(std::string msg);

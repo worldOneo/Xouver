@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include <runtime/runtimeprocess.h>
-#include <memory/memorymanager.h>
 #include <object/object.h>
 #include <common.h>
 
@@ -24,7 +23,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 	current = processes.begin();
 
 	setClass(mainClass);
-	callFunction(func, {}, 0);
+	callFunction(0);
 
 	while (current != processes.end()) {
 		if (*current != nullptr) {
@@ -56,28 +55,44 @@ std::string runtime::getException() {
 	return this->exception;
 }
 
-void runtime::putNativeFunction(std::string signature, void (*fn)(void*, xfunc_data*)) {
-	nativeFunctions.insert(std::pair<std::string, void (__cdecl*)(void*, xfunc_data*)>(signature, fn));
+void runtime::putNativeFunction(std::string signature, void (*fn)(void*)) {
+	nativeFunctions.insert(std::pair<std::string, void (__cdecl*)(void*)>(signature, fn));
 }
 
-void runtime::putFunction(std::string signature, unsigned char* instructions) {
-	functions.insert(std::pair<std::string, unsigned char*>(signature,instructions));
+void runtime::putFunction(std::string signature, int* instructions) {
+	functions.insert(std::pair<std::string, int*>(signature,instructions));
+}
+
+void runtime::mapFunction(int id, std::string signature) {
+	functionmap.putFunction(id, signature);
 }
 
 void runtime::setClass(xclass* c) {
 	(*current)->setClass(c);
 }
 
-void runtime::callFunction(std::string signature, xvalue* args, int argCount) {
+void runtime::mapClass(int id, std::string path) {
+	classmap.putClass(id, path);
+}
 
+xclass* runtime::getClass(int id) {
+	std::string path = classmap.getClass(id);
+	return getClassManager()->getClass(path);
+}
+
+void runtime::callFunction(int id) {
+	callFunction(functionmap.getFunction(id));
+}
+
+void runtime::callFunction(std::string signature) {
 	if (nativeFunctions.contains(signature)) {
-		//	(*current)->setNativeFunction(signature, nativeFunctions[signature], args);
+		(*current)->setNativeFunction(signature, nativeFunctions[signature]);
 	}
 	else {
-		std::vector<ptr*> scope;
-		for (int i = 0; i < argCount; i++) {
+		std::vector<xvalue*> scope;
+		/*for (int i = 0; i < argCount; i++) {
 			scope.push_back(new ptr(args[i]));
-		}
+		}*/
 		(*current)->localScopes.push(scope);
 		(*current)->setFunction(signature, functions[signature]);
 	}

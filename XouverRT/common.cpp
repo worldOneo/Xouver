@@ -8,12 +8,13 @@
 #include <string>
 
 #include <runtime/runtime.h>
-#include <instructions.h>
+#include <opcodes.h>
 
 #include <class/native/nativeclasses.h>
 #include <class/xclass.h>
 #include <class/classmanager.h>
-#include <memory/memorymanager.h>
+
+#include <memory/memory.h>
 
 #define VERSION_MAJ 1
 #define VERSION_MIN 0
@@ -23,23 +24,41 @@ XNI_Error currentError = XNI_Error::NO_XNI_ERROR;
 runtime* rt;
 
 void* createRuntime() {
-	memorymanager::initialize();
-
+	initMem();
 	runtime* rt = new runtime();
-	ptr* pool[1];
-	pool[0] = new ptr(5);
 
-	xclass* c = (xclass*)malloc(sizeof(xclass));
-	*c = xclass(rt, pool, 1, 0);
+	xvalue* pool[2];
+	pool[0] = (xvalue*)allocate(sizeof(xvalue));
 
-	unsigned char* instructions = new unsigned char[] {
-		INST_CLOAD, 0, INST_OUT, 8
+	pool[0]->type = valuetype::INT;
+	pool[0]->value.i = 5;
+
+	pool[1] = (xvalue*)allocate(sizeof(xvalue));
+	pool[1]->type = valuetype::INT;
+	pool[1]->value.i = 5;
+
+	xclass* c = (xclass*)allocate(sizeof(xclass));
+	*c = xclass(rt, pool, 2, 0);
+
+	int* instructions = new int[] {
+		OP_CLOAD, 0,
+		OP_CLOAD, 1,
+		OP_IFEQ,
+		OP_JIF, 11,
+		OP_CALL, 1,
+		OP_JMP, 13,
+		OP_CALL, 2,
+		8
 	};
 
 	registerFunction(rt, "int:ToString()#void", *nativeInt::toString);
 	registerFunction(rt, "object:Equals()#void", *nativeObject::equals);
 	registerFunction(rt, "xouver:Main()#void", instructions);
-	
+
+	rt->mapFunction(0, "xouver:Main()#void");
+	rt->mapFunction(1, "object:Equals()#void");
+	rt->mapFunction(2, "int:ToString()#void");
+
 	registerClass(rt, "Xouver.Test.TestClass", c);
 	return rt;
 }
@@ -92,22 +111,22 @@ XRT_Error getXrtError(void* _rt) {
 	return rt->getError();
 }
 
-void registerFunction(void* _rt, const char* signature, void (*fn)(void*, xfunc_data*)) {
+void registerFunction(void* _rt, const char* signature, void (*fn)(void*)) {
 	convertRT(_rt);
 
 	rt->putNativeFunction(std::string(signature), fn);
 }
 
-void registerFunction(void* _rt, const char* signature, unsigned char* instructions) {
+void registerFunction(void* _rt, const char* signature, int* instructions) {
 	convertRT(_rt);
 
 	rt->putFunction(signature, instructions);
 }
 
-void callFunction(void* _rt, const char* signature, unsigned int argCount) {
+void callFunction(void* _rt, const char* signature) {
 	convertRT(_rt);
 
-	rt->callFunction(signature, {}, argCount);
+	rt->callFunction(signature);
 }
 
 void runRuntime(void* _rt, const char* mainClass, const char* mainFuncSignature) {
@@ -115,7 +134,6 @@ void runRuntime(void* _rt, const char* mainClass, const char* mainFuncSignature)
 
 	xclass* c = rt->getClassManager()->getClass(mainClass);
 	rt->run(c, mainFuncSignature);
-	memorymanager::clear();
 }
 
 void haltCurrentProcess(void* _rt) {

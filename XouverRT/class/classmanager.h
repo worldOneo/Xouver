@@ -14,8 +14,6 @@ public:
 	void putClass(std::string path, xclass* c);
 	xclass* getClass(std::string path);
 	void clearClasses();
-
-	~classmanager();
 };
 
 #endif

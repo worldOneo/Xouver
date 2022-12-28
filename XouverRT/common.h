@@ -2,7 +2,6 @@
 #define COMMON_H
 
 #include <XNI.h>
-#include <memory/memorymanager.h>
 #include "class/xclass.h"	
 
 void setXniError(XNI_Error e);

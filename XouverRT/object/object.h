@@ -4,17 +4,11 @@
 #include <XNI.h>
 #include <string>
 #include <class/xclass.h>
-#include <memory/memorymanager.h>
 
-class object : _xobject {
-private:
+struct object : _xobject {
 	int scopeSize;
 	xclass* classObj;
-	ptr** obj;
-public:
-	object(xclass* classObj, int scopeSize);
-	ptr* get(int idx);
-	~object();
+	xvalue** obj;
 };
 
 #endif

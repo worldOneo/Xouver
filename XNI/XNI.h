@@ -88,8 +88,8 @@ extern "C" {
 	XRT_Error getXrtError(void* _rt);
 
 
-	void callFunction(void* _rt, const char* signature, xvalues* args, unsigned int argCount);
-	void registerFunction(void* _rt, const char* signature, void (*fn)(void*, xfunc_data* data));
+	void callFunction(void* _rt, const char* signature);
+	void registerFunction(void* _rt, const char* signature, void (*fn)(void*));
 
 	void registerClass(void* _rt, const char* signature);
 

@@ -15,25 +15,22 @@ private:
 	bool _isHalted;
 
 	std::stack<int> ptrs;
-	std::stack<unsigned char*> instructions;
+	std::stack<int*> instructions;
 	std::vector<std::string> functionCallVector;
 	std::stack<xclass*> classes;
-	std::stack<ptr*> stack;
+	std::stack<xvalue*> stack;
 	std::stack<int> lines;
 public:
-	std::stack<std::vector<ptr*>> localScopes;
+	std::stack<xvalue**> localScopes;
 
 	runtime_process(void* rt);
 
-	ptr* run();	
-	void setFunction(std::string signature, unsigned char* instructions);
+	xvalue* run();	
+	void setFunction(std::string signature, int* instructions);
 	void returnFunction();
-	ptr* setNativeFunction(std::string signature, void (*fn)(void*, xfunc_data*), xvalues* args);
+	void setNativeFunction(std::string signature, void (*fn)(void*));
 	bool isHalted();
 	void halt();
-
-	void pushFromPool(int i);
-	void pushFromScope(int i);
 
 	void setClass(xclass* c);
 	xclass* getCurrentClass();

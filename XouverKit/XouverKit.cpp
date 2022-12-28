@@ -7,7 +7,6 @@
 #endif
 
 int main() {
-	num = 4;
 	void* rt = createRuntime();
 
 	runRuntime(rt, "Xouver.Test.TestClass", "xouver:Main()#void");
