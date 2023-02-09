@@ -1,86 +1,71 @@
 #include "memory.h"
 
+#include <XNI.h>
+
 #include <stdlib.h>
+#include <runtime/runtime.h>
 
-typedef struct block {
-	void* ptr;
-};
+memorymanager::memorymanager(void* rt) {
+	this->rt = rt;
 
-int pcount = 1;
-block* nullBlock;
-block** blocks;
+	blocks = (memblock*)malloc(0);
+	if (blocks == nullptr) ((runtime*)rt)->setError(XRT_Error::MEMORY_INITIALIZATION_FAILED);
+	else bC = 0;
+}
 
-bool isInit = false;
+void* memorymanager::allocate(size_t size) {
+	for (int i = 0; i < bC; i++) {
+		if (blocks[i].ptr == nullptr) {
+			blocks[bC].ptr = malloc(size);
 
-void initMem() {
-	if (!isInit) {
-		block* b = (block*)malloc(sizeof(block));
-		b->ptr = malloc(sizeof(char));
-		*((char*)b->ptr) = 0;
-
-		blocks = (block**)malloc(sizeof(block*));
-		blocks[0] = b;
-
-		isInit = true;
+			return blocks[i].ptr;
+		}
 	}
-}
 
-void* allocate(size_t size) {
-	void* p = malloc(size);
-	block* b = (block*)malloc(sizeof(block));
+	memblock* nblocks = reallocBlocks(bC+1);
 
-	b->ptr = p;
+	if (nblocks != nullptr) {
+		nblocks[bC-1] = {};
+		nblocks[bC-1].ptr = malloc(size);
 
-	blocks = (block**) realloc(b, sizeof(block*) * pcount+1);
-	blocks[pcount++] = b;
-
-	return p;
-}
-
-block* getBlock(void* ptr) {
-	block* b = nullptr;
-
-	for (int i = 0; i < pcount; i++)
-		if ((blocks[i]->ptr == ptr))
-			b = blocks[i];
-
-	return b;
-}
-
-void* reallocate(void* ptr, size_t size) {
-	block* b = getBlock(ptr);
-
-	void* _ptr = realloc(ptr, size);
-	b->ptr = _ptr;
-
-	return _ptr;
-}
-
-
-void deallocate(void* ptr) {
-	block* b = getBlock(ptr);
-	if (b == nullptr) return;
-
-	block** _blocks = (block**)malloc(sizeof(block*) * pcount--);
-
-	for (int i = 0; i <= pcount; i++) {
-		if (blocks[i] != b) {
-			_blocks[i] = blocks[i];
+		if (nblocks[bC-1].ptr != nullptr) {
+			free(blocks);
+			blocks = nblocks;
+			
+			return blocks[bC-1].ptr;
 		}
 		else {
-			free(blocks[i]->ptr);
-			free(blocks[i]);
+			free(nblocks);
 		}
 	}
 
-	free(blocks);
+	return nullptr;
 }
 
-void clearmemory() {
-	for (int i = 0; i < pcount; i++) {
-		free(blocks[i]->ptr);
-		free(blocks[i]);
-	}
+memblock* memorymanager::reallocBlocks(size_t nsize) {
+	memblock* nblocks = (memblock*)malloc(sizeof(memblock) * nsize);
 
-	isInit = false;
+	if (nblocks == nullptr) return nullptr;
+
+	for (int i = 0; i < bC; i++) {
+		nblocks[i] = blocks[i];
+	}
+	bC++;
+
+	return nblocks;
+}
+
+void memorymanager::deallocate(void* ptr) {
+	for (int i = 0; i < bC; i++) {
+		if (blocks[i].ptr == ptr) {
+			free(blocks[i].ptr);
+			ptr = nullptr;
+		}
+	}
+}
+
+memorymanager::~memorymanager() {
+	for (int i = 0; i < bC; i++) {
+		free(blocks[i].ptr);
+	}
 }

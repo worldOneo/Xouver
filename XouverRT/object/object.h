@@ -6,7 +6,6 @@
 #include <class/xclass.h>
 
 struct object : _xobject {
-	int scopeSize;
 	xclass* classObj;
 	xvalue** obj;
 };

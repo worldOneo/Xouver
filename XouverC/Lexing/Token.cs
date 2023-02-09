@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace XouverC.Lexing {
     public struct Token {
-        TokenType type;
-        dynamic value;
-        int line;
+        public TokenType type;
+        public dynamic value;
+        public int line;
 
         public Token(TokenType type, dynamic value, int line) {
             this.type = type;

@@ -1,11 +1,22 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-void initMem();
-void* allocate(size_t size);
-void* reallocate(void* ptr, size_t);
-void deallocate(void* ptr);
+typedef struct S_MEMBLOCK_T {
+	void* ptr;
+} memblock;
 
-void clearmemory();
+class memorymanager {
+private:
+	void* rt;
+	memblock* blocks;
+	int bC;
+
+	memblock* reallocBlocks(size_t nsize);
+public:
+	memorymanager(void* rt);
+	void* allocate(size_t size);
+	void deallocate(void* ptr);
+	~memorymanager();
+};
 
 #endif

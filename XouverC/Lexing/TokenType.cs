@@ -11,10 +11,14 @@ namespace XouverC.Lexing {
         Char, String,
         Identifier,
         Plus, Minus, Div, Mul, Not,
-        Equals, Greater, Less
+        Increase, Decrease,
+        CmpEquals, NotEq, Greater, Less, GreaterEq, LessEq,
+        Equals, PlusEq, MinusEq, DivEq, MulEq,
         L_Arrow, R_Arrow,
         L_Brack, R_Brack,
         L_Paren, R_Paren,
-        L_Brace, R_Brace
+        L_Brace, R_Brace,
+        Semicolon, Comma, Period,
+        Eof
     }
 }

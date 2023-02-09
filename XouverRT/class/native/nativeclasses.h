@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#include <runtime/runtime.h>
-
 class nativeObject {
 public:
 	static void equals(void* rt) {

@@ -3,6 +3,8 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
+include_directories ("${CMAKE_SOURCE_DIR}/XNI")
+
 # Fügen Sie der ausführbaren Datei dieses Projekts eine Quelle hinzu.
 add_executable (Xouver "XouverKit.cpp")
 

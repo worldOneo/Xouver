@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -20,7 +21,10 @@ namespace XouverC.Lexing {
 
         public Lexer(string code) {
             this.code = code;
-            ptr = -1;
+            ptr = 0;
+            line = 1;
+            tokens = new List<Token>();
+            current = code[0];
         }
 
         public Token[] Lex() {
@@ -29,71 +33,103 @@ namespace XouverC.Lexing {
             while (ptr < code.Length) {
                 if ((LETTERS + '_').Contains(current)) {
                     tokens.Add(new Token(TokenType.Identifier, MakeIdentifier(), line));
+                    continue;
                 }
                 else if (DIGITS.Contains(current)) {
-                    dynamic num = MakeNumber();
-
-                    TokenType type = num is int ? TokenType.Int : TokenType.Float;
-                    tokens.Add(new Token(type, num, line));
+                    tokens.Add(MakeNumber());
+                    continue;
                 }
-                else if (current == '"') {
+                else if (current == '"')
                     tokens.Add(new Token(TokenType.String, MakeString(), line));
-                }
-                else if (current == '\'') {
+                else if (current == '\'')
                     tokens.Add(new Token(TokenType.Char, MakeChar(), line));
+                else if (current == '(')
+                    tokens.Add(new Token(TokenType.L_Paren, '(', line));
+                else if (current == ')')
+                    tokens.Add(new Token(TokenType.R_Paren, ')', line));
+                else if (current == '[')
+                    tokens.Add(new Token(TokenType.L_Brack, '[', line));
+                else if (current == ']')
+                    tokens.Add(new Token(TokenType.R_Brack, ']', line));
+                else if (current == '{')
+                    tokens.Add(new Token(TokenType.L_Brace, '{', line));
+                else if (current == '}')
+                    tokens.Add(new Token(TokenType.R_Brace, '}', line));
+                else if (current == '+')
+                    switch (Advance()) {
+                        case '=':
+                            tokens.Add(new Token(TokenType.PlusEq, "+=", line));
+                            break;
+                        case '+':
+                            tokens.Add(new Token(TokenType.Increase, "++", line));
+                            break;
+                        default:
+                            tokens.Add(new Token(TokenType.Plus, "+", line));
+                            continue;
+                    }
+                else if (current == '-')
+                    switch (Advance()) {
+                        case '=':
+                            tokens.Add(new Token(TokenType.MinusEq, "-=", line));
+                            break;
+                        case '+':
+                            tokens.Add(new Token(TokenType.Decrease, "--", line));
+                            break;
+                        default:
+                            tokens.Add(new Token(TokenType.Minus, "-", line));
+                            continue;
+                    }
+                else if (current == '*')
+                    if (Advance() == '=')
+                        tokens.Add(new Token(TokenType.MulEq, "*=", line));
+                    else {
+                        tokens.Add(new Token(TokenType.Mul, "*", line));
+                        continue;
+                    }
+                else if (current == '/')
+                    if (Advance() == '=')
+                        tokens.Add(new Token(TokenType.DivEq, "/=", line));
+                    else {
+                        tokens.Add(new Token(TokenType.Div, '/', line));
+                        continue;
+                    }
+                else if (current == '<')
+                    if (Advance() == '=')
+                        tokens.Add(new Token(TokenType.LessEq, "<=", line));
+                    else {
+                        tokens.Add(new Token(TokenType.Less, "<", line));
+                        continue;
+                    }
+                else if (current == '>')
+                    if (Advance() == '=')
+                        tokens.Add(new Token(TokenType.GreaterEq, ">=", line));
+                    else {
+                        tokens.Add(new Token(TokenType.Greater, ">", line));
+                        continue;
+                    }
+                else if (current == '=')
+                    if (Advance() == '=')
+                        tokens.Add(new Token(TokenType.CmpEquals, "==", line));
+                    else {
+                        tokens.Add(new Token(TokenType.Equals, "=", line));
+                        continue;
+                    }
+                else if (current == ';')
+                    tokens.Add(new Token(TokenType.Semicolon, ';', line));
+                else if (current == '.')
+                    tokens.Add(new Token(TokenType.Period, '.', line));
+                else if (current == ',')
+                    tokens.Add(new Token(TokenType.Comma, ',', line));
+                else if (current == '\n')
+                    line++;
+                else if ((" \t\r\v").Contains(current)) { }
+                else if (current == '\0') {
+                    tokens.Add(new Token(TokenType.Eof, "Eof", line));
+                    break;
                 }
-                else if (current == '(') {
-                    tokens.Add(new Token(TokenType.L_Paren, null, line));
-                    Advance();
-                }
-                else if (current == ')') {
-                    tokens.Add(new Token(TokenType.R_Paren, null, line));
-                    Advance();
-                }
-                else if (current == '[') {
-                    tokens.Add(new Token(TokenType.L_Brack, null, line));
-                    Advance();
-                }
-                else if (current == ']') {
-                    tokens.Add(new Token(TokenType.R_Brack, null, line));
-                    Advance();
-                }
-                else if (current == '{') {
-                    tokens.Add(new Token(TokenType.L_Brace, null, line));
-                    Advance();
-                }
-                else if (current == '}') {
-                    tokens.Add(new Token(TokenType.R_Brace, null, line));
-                    Advance();
-                }
-                else if (current == '+') {
-                    tokens.Add(new Token(TokenType.Plus, null, line));
-                    Advance();
-                }
-                else if (current == '-') {
-                    tokens.Add(new Token(TokenType.Minus, null, line));
-                    Advance();
-                }
-                else if (current == '*') {
-                    tokens.Add(new Token(TokenType.Mul, null, line));
-                    Advance();
-                }
-                else if (current == '/') {
-                    tokens.Add(new Token(TokenType.Div, null, line));
-                    Advance();
-                }
-                else if (current == '<') {
-                    tokens.Add(new Token(TokenType.Less, null, line));
-                    Advance();
-                }
-                else if (current == '>') {
-                    tokens.Add(new Token(TokenType.Greater, null, line));
-                    Advance();
-                }
-                else if (current == '=') {
-                    tokens.Add(new Token(TokenType.Equals, null, line));
-                    Advance();
-                }
+                else throw new Exception("Unexpected character '" + current + "' on line " + line);
+
+                Advance();
             }
             return tokens.ToArray();
         }
@@ -109,7 +145,7 @@ namespace XouverC.Lexing {
             return ident;
         }
 
-        private dynamic MakeNumber() {
+        private Token MakeNumber() {
             string numStr = "";
             bool hasDot = false;
 
@@ -124,8 +160,8 @@ namespace XouverC.Lexing {
                 Advance();
             }
 
-            if (hasDot) return float.Parse(numStr);
-            else return int.Parse(numStr);
+            if (hasDot) return new Token(TokenType.Float, float.Parse(numStr, CultureInfo.InvariantCulture.NumberFormat), line);
+            else return new Token(TokenType.Int, int.Parse(numStr), line);
         }
 
         private string MakeString() {
@@ -184,8 +220,9 @@ namespace XouverC.Lexing {
             }
         }
 
-        private void Advance() {
+        private char Advance() {
             current = code[++ptr];
+            return current;
         }
     }
 }

@@ -1,15 +1,19 @@
 #ifndef FUNCTIONMAP_H
 #define FUNCTIONMAP_H
 
-#include <map>
-#include <string>
+#include <vector>
+
+typedef struct s_functioninfo {
+	char* signature;
+	int pointer;
+} functioninfo;
 
 class function_map {
 private:
-	std::map<int, std::string> map;
+	std::vector<functioninfo> functions;
 public:
-	std::string getFunction(int id);
-	void putFunction(int id, std::string signature);
+	functioninfo& getFunction(int index);
+	void putFunction(functioninfo info);
 };
 
 #endif

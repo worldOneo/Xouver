@@ -6,12 +6,41 @@
 #include <Windows.h>
 #endif
 
+#define BYTE_INT(bytes, pos)		(bytes[*pos] << 24) | (bytes[*pos + 1] << 16) | (bytes[*pos + 2] << 8) | (bytes[*pos + 3]); *pos += 4;
+
 int main() {
-	void* rt = createRuntime();
+	FILE* file = fopen("D:\\source\\repos\\Xouver\\Test.xvr", "rb");
 
-	runRuntime(rt, "Xouver.Test.TestClass", "xouver:Main()#void");
+	if (file == NULL) throw std::exception();
 
-	if (getXrtError(rt) == XRT_Error::APP_EXCPETION_THROWN) {
+	fseek(file, 0L, SEEK_END);
+	long numbytes = ftell(file);
+
+	fseek(file, 0L, SEEK_SET);
+
+	unsigned char* buffer = new unsigned char[numbytes];
+
+	fread(buffer, sizeof(unsigned char), numbytes, file);
+	fclose(file);
+
+
+	XNI_Error err;
+	void* rt = createRuntime(&err, buffer, numbytes);
+
+	if (err != NO_XNI_ERROR) {
+		std::cout << "Error: " << resolveXNIError(err);
+		return -1;
+	}
+
+	err = createClass(rt, buffer, numbytes);
+
+	if (err != NO_XNI_ERROR) {
+		std::cout << "Error: " << resolveXNIError(err);
+		return -1;
+	}
+	runRuntime(rt, "Test", "xouver:Main()#void");
+
+	/*if (getXrtError(rt)) {
 		int size = getExpceptionMessageSize(rt);
 		char* msg = new char[size];
 		getExceptionMessage(rt, &msg);
@@ -44,9 +73,10 @@ int main() {
 #endif
 
 		delete[] msg;
-	}
+	}*/
 
 	delete rt;
+	delete[] buffer;
 	return 0;
 }
 

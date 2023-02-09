@@ -1,15 +1,19 @@
 #ifndef CLASSMAP_H
 #define CLASSMAP_H
 
-#include <map>
-#include <string>
+#include <vector>
+
+typedef struct s_classinfo {
+	char* signature;
+	int pointer;
+} classinfo;
 
 class class_map {
 private:
-	std::map<int, std::string> map;
+	std::vector<classinfo> classes;
 public:
-	std::string getClass(int id);
-	void putClass(int id, std::string path);
+	classinfo& getClass(int index);
+	void putClass(classinfo info);
 };
 
 #endif

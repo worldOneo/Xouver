@@ -2,12 +2,13 @@
 #define RUNTIME_H
 
 #include <XNI.h>
-#include <runtime/runtimeprocess.h>
 #include <class/xclass.h>
 #include <class/classManager.h>
 
 #include <mapping/functionmap.h>
 #include <mapping/classmap.h>
+
+#include <memory/memory.h>
 
 #include <stack>
 #include <string>
@@ -16,18 +17,31 @@
 class runtime {
 private:
 	XRT_Error currentError;
-	std::vector<runtime_process*>::iterator current;
-	std::vector<runtime_process*> processes;
+	
+	memorymanager* memManager;
 	classmanager classManager;
 
+	bool _isHalted;
+	xclass* currentClass;
+
+	std::stack<int> ptrs;
+	std::vector<std::string> functionCallVector;
+	std::stack<xclass*> classes;
+	std::stack<xvalue*> stack;
+	std::stack<xvalue**> localScopes;
+	std::stack<int> lines;
+
 	std::map<std::string, void (__cdecl*) (void*)> nativeFunctions;
-	std::map<std::string, unsigned char*> functions;
-	std::map<std::string, int> scopeSizes;
+
 	function_map functionmap;
 	class_map classmap;
 
 	std::string exception;
 public:
+	int funcOffset;
+	unsigned char* bytes;
+
+	runtime();
 	~runtime();
 	void run(xclass* mainClass, std::string func);
 
@@ -37,19 +51,20 @@ public:
 	std::string getException();
 
 	void putNativeFunction(std::string signature, void (*fn)(void*));
-	void putFunction(std::string signature, unsigned char* instructions, int scopeSize);
-	void mapFunction(int id, std::string signature);
 	void setClass(xclass* c);
-	void mapClass(int id, std::string path);
-	xclass* getClass(int id);
 	void callFunction(int id);
-	void callFunction(std::string signature);
-	bool haltProcess();
-	void switchProcess();
+	void halt();
+	std::string createCallStack();
+	std::string createExceptionMessage(std::string msg);
 	void throwError(std::string msg);
 
 	classmanager* getClassManager();
-	const xvalue& getStackTop();
+	memorymanager* getMemoryManager();
+	function_map* getFunctionMap();
+	xvalue* getStackTop();
+
+	unsigned char advance();
+	int getArg();
 };
 
 #endif

@@ -8,16 +8,21 @@
 #include "value/xvalue.h"
 
 class xclass {
-private:
+public:
 	void* rt;
+
+	int classOffset;
+	char* fullName;
+
 	xvalue** pool;
 	int poolSize;
-	int scopeSize;
 
-public:
-	xclass(void* rt, xvalue** pool, int poolSize, int scopeSize);
-	xvalue* getConstant(int index);
-	int getScopeSize();
+	int functionsSize;
+	int* functions;
+
+	int funcsOffset;
+
+	int scopeSize;
 };
 
 #endif

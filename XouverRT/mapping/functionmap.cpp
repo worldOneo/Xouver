@@ -1,13 +1,11 @@
 #include "functionmap.h"
 
-std::string function_map::getFunction(int id) {
-	for (auto it : map) {
-		if (it.first == id) return it.second;
-	}
+#include <memory/memory.h>
 
-	return "";
+functioninfo& function_map::getFunction(int index) {
+	return functions[index];
 }
 
-void function_map::putFunction(int id, std::string signature) {
-	map.emplace(std::make_pair(id, signature));
+void function_map::putFunction(functioninfo info) {
+	functions.push_back(info);
 }

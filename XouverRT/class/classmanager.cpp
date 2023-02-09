@@ -2,17 +2,25 @@
 
 #include <string>
 
-xclass* classmanager::getClass(std::string path) {
-	return classes[path];
+xclass* classmanager::getClass(int index) {
+	return classes[index];
 }
 
-void classmanager::putClass(std::string path, xclass* c) {
-	classes.emplace(std::pair<std::string, xclass*>(path, c));
+xclass* classmanager::getClass(std::string path) {
+	for (auto it = classes.begin(); it != classes.end(); it++) {
+		if ((*it)->fullName == path) return *it;
+	}
+
+	return nullptr;
+}
+
+void classmanager::putClass(xclass* c) {
+	classes.push_back(c);
 }
 
 void classmanager::clearClasses() {
 	for (auto it = classes.begin(); it != classes.end(); it++) {
-		free(it->second);
+		free(*it);
 		classes.erase(it);
 	}
 }

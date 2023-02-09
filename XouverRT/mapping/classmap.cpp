@@ -1,13 +1,11 @@
 #include "classmap.h"
 
-std::string class_map::getClass(int id) {
-	for (auto it : map) {
-		if (it.first == id) return it.second;
-	}
+#include <memory/memory.h>
 
-	return "";
+classinfo& class_map::getClass(int index) {
+	return classes[index];
 }
 
-void class_map::putClass(int id, std::string signature) {
-	map.emplace(std::pair(id, signature));
+void class_map::putClass(classinfo info) {
+	classes.push_back(info);
 }

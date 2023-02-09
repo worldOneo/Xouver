@@ -1,17 +1,18 @@
 #ifndef CLASS_MANAGER_H
 #define CLASS_MANAGER_H
 
-#include <map>
+#include <vector>
 #include <string>
 
 #include "xclass.h"
 
 class classmanager {
 private:
-	std::map<std::string, xclass*> classes;
+	std::vector<xclass*> classes;
 
 public:
-	void putClass(std::string path, xclass* c);
+	void putClass(xclass* c);
+	xclass* getClass(int index);
 	xclass* getClass(std::string path);
 	void clearClasses();
 };

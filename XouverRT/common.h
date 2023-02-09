@@ -4,10 +4,8 @@
 #include <XNI.h>
 #include "class/xclass.h"	
 
-void setXniError(XNI_Error e);
+#define BYTE_INT(bytes, pos)		(bytes[*pos] << 24) | (bytes[*pos + 1] << 16) | (bytes[*pos + 2] << 8) | (bytes[*pos + 3]); *pos += 4;
 
-void registerFunction(void* _rt, const char* signature, unsigned char* instructions, int scopeSize);
-void setExceptionMessage(const char* msg);
-void registerClass(void* _rt, const char* signaure, xclass* c);
-
+const char* setXniError(XNI_Error e);
+const char* setExceptionMessage(const char* msg);
 #endif

@@ -2,7 +2,7 @@
 #define VALUE_TYPE_H
 
 typedef enum E_VALUE_TYPE {
-	NONE,
+	NONE = 0,
 	INT,
 	FLOAT,
 	BOOL,

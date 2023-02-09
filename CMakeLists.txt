@@ -6,7 +6,6 @@ cmake_minimum_required (VERSION 3.0)
 project ("Xouver")
 
 
-include_directories (xni)
 # Schließen Sie Unterprojekte ein.
 add_subdirectory ("XouverRT")
 add_subdirectory ("XouverKit")
