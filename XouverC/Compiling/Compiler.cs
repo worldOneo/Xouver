@@ -386,7 +386,7 @@ namespace XouverC.Compiling
                         instructs.Add(Instructions.IfEq);
                         break;
                     case "<":
-                        instructs.Add(Instructions.IfGt);
+                        instructs.Add(Instructions.IfGq);
                         instructs.Add(Instructions.Not);
                         break;
                     case ">":
