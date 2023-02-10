@@ -86,13 +86,32 @@ namespace XouverC.Lexing {
                         tokens.Add(new Token(TokenType.Mul, "*", line));
                         continue;
                     }
-                else if (current == '/')
-                    if (Advance() == '=')
+                else if (current == '/') {
+                    char next = Advance();
+                    if (next == '=')
                         tokens.Add(new Token(TokenType.DivEq, "/=", line));
+                    else if (next == '/') {
+                        while (current != '\n') Advance();
+                        continue;
+                    }
+                    else if (next == '*') {
+                        while (true) {
+                            Advance();
+
+                            if (current == '*') {
+                                Advance();
+
+                                if (current == '/') break;
+                            }
+
+                            if (current == '\0') throw new Exception();
+                        }
+                    }
                     else {
                         tokens.Add(new Token(TokenType.Div, '/', line));
                         continue;
                     }
+                }
                 else if (current == '<')
                     if (Advance() == '=')
                         tokens.Add(new Token(TokenType.LessEq, "<=", line));

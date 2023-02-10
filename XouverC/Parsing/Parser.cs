@@ -21,7 +21,7 @@ namespace XouverC.Parsing {
         private TokenType[] compOps = { TokenType.CmpEquals, TokenType.Greater, TokenType.Less, TokenType.GreaterEq, TokenType.LessEq };
         private TokenType[] assignOps = { TokenType.Equals, TokenType.PlusEq, TokenType.MinusEq, TokenType.MulEq, TokenType.DivEq };
 
-        private string[] MODIFIERS = { "public", "private", "pub", "priv" };
+        private string[] MODIFIERS = { "public", "private", "pub", "priv", "native", "nat" };
         private string[] KEYWORDS = { "define", "def", "function", "func", "public", "pub", "private", "priv" };
         public Parser(Token[] tokens) {
             this.tokens = tokens;
@@ -282,11 +282,14 @@ namespace XouverC.Parsing {
 
                         NextToken();
 
-                        List<ASTExpr> exprs = new();
-                        exprs.Add(ParseExpr());
-                        exprs.Add(new ASTReturn());
-
-                        def.exprs = exprs.ToArray();
+                        if (!modifiers.Contains("native") || !modifiers.Contains("nat")) {
+                            List<ASTExpr> exprs = new();
+                            exprs.Add(ParseExpr());
+                            exprs.Add(new ASTReturn());
+                            def.isNative = false;
+                            def.exprs = exprs.ToArray();
+                        }
+                        else def.isNative = true;
 
                         Console.WriteLine(def.ToString() + "\n");
                         return def;

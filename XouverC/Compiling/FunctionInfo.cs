@@ -15,5 +15,6 @@ namespace XouverC.Compiling {
         public string[] modifiers;
         public ASTExpr[] exprs;
         public string type;
+        public bool isNative;
     }
 }

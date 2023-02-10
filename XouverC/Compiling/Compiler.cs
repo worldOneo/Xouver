@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -94,7 +96,7 @@ namespace XouverC.Compiling
                 content.AddRange(GetBytes(info.signature.Length));
                 foreach (char c in info.signature)
                     content.Add(Convert.ToByte(c));
-
+                if (info.isNative) content.AddRange(new byte[] { 0,0,0,0 });
                 info.pointer = instructions.Count;
                 content.AddRange(GetBytes(info.pointer));
 
@@ -471,6 +473,7 @@ namespace XouverC.Compiling
             info.exprs = expr.exprs;
             info.modifiers = expr.modifiers;
             info.type = expr.type;
+            info.isNative = expr.isNative;
 
             funcInfos.Add(info);
         }
