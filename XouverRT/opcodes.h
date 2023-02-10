@@ -24,17 +24,18 @@
 #define OP_OLOAD			(unsigned char) 21
 #define OP_OSTORE			(unsigned char) 22
 #define OP_INVO				(unsigned char) 23
+#define OP_NEW				(unsigned char) 24
 
-#define OP_POP				(unsigned char) 24
-#define OP_CLS				(unsigned char) 25
+#define OP_POP				(unsigned char) 25
+#define OP_CLS				(unsigned char) 26
 
-#define OP_SYNC				(unsigned char) 26
-#define OP_ASYNC			(unsigned char) 27
+#define OP_SYNC				(unsigned char) 27
+#define OP_ASYNC			(unsigned char) 28
 
-#define OP_LINE				(unsigned char) 28
+#define OP_LINE				(unsigned char) 29
 
 #ifdef _DEBUG
-#define OP_OUT				(unsigned char) 29
+#define OP_OUT				(unsigned char) 30
 #endif
 
 #endif

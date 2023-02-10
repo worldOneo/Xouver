@@ -475,6 +475,15 @@ void runtime::run(xclass* mainClass, std::string func) {
 				xclass* c = classManager.getClass(idx);
 				setClass(c);
 				break;
+
+			}
+			case OP_NEW: {
+				int idx = getArg();
+
+				xvalue r = xvalue();
+				r.type = valuetype::OBJECT;
+
+				xclass* c = classManager.getClass(idx);
 			}
 			case OP_POP: {
 				int amount = advance();
