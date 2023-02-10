@@ -135,14 +135,14 @@ namespace XouverC.Compiling
                 content.Add(i);
             }
 
-            string outPath = filePath;
+            /*string outPath = filePath;
             if (outDir != "") outPath = outDir;
 
             if (outName != "") outPath += "\\" + outName;
             else outPath += "\\" + className + ".xcls";
 
             //File.WriteAllBytes(outPath, content.ToArray());
-            //Console.WriteLine(outPath);
+            //Console.WriteLine(outPath);*/
             hasCompiled = true;
             code = content.ToArray();
 
@@ -211,7 +211,6 @@ namespace XouverC.Compiling
                 if (info.type != valType) throw new InvalidTypeException(valType, info.type, dec.line);
 
                 instructs.AddRange(CompileExpr(dec.value));
-
                 instructs.Add(Instructions.Store);
                 instructs.AddRange(GetBytes(info.pointer));
 
@@ -235,9 +234,28 @@ namespace XouverC.Compiling
                         string valType = ResolveType(assign.value);
                         if (info.type != valType) throw new InvalidTypeException(valType, info.type, expr.line);
 
-                        instructs.AddRange(CompileExpr(assign.value));
+                        byte[] pointer = GetBytes(info.pointer);
+
+                        if (assign.op == "=") {
+                            instructs.AddRange(CompileExpr(assign.value));
+                        }
+                        else {
+                            instructs.Add(Instructions.Load);
+                            instructs.AddRange(pointer);
+                            instructs.AddRange(CompileExpr(assign.value));
+                            
+                            if (assign.op == "+=")
+                                instructs.Add(Instructions.Add);
+                            if (assign.op == "-=")
+                                instructs.Add(Instructions.Sub);
+                            if (assign.op == "*=")
+                                instructs.Add(Instructions.Mul);
+                            if (assign.op == "/=")
+                                instructs.Add(Instructions.Div);
+                        }
+
                         instructs.Add(Instructions.Store);
-                        instructs.AddRange(GetBytes(info.pointer));
+                        instructs.AddRange(pointer);
 
                         return instructs.ToArray();
                     }
@@ -483,7 +501,7 @@ namespace XouverC.Compiling
             else if (expr is ASTIdentifier) {
                 ASTIdentifier ident = (ASTIdentifier)expr;
 
-                if (scopes.Count > 1) {
+                if (scopes.Count > 0) {
                     foreach (VarInfo info in scopes.Peek()) {
                         if (info.name == ident.value) {
                             return info.type;
