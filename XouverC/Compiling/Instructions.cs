@@ -29,5 +29,6 @@ namespace XouverC.Compiling {
         public static byte OStore = 22;
 
         public static byte Invoke = 23;
+        public static byte New = 24;
     }
 }

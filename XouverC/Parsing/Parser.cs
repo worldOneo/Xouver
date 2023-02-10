@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Runtime.Intrinsics.Arm;
@@ -374,6 +375,17 @@ namespace XouverC.Parsing {
                     ret.line = current.line;
 
                     return ret;
+                }
+                else if (current.value == "new") {
+                    NextToken();
+
+                    if (current.type != TokenType.Identifier) throw new NotImplementedException();
+                    
+                    ASTNewExpr newExpr = new();
+                    newExpr.name = current.value;
+                    NextToken();
+
+                    return newExpr;
                 }
             }
             else if (current.type == TokenType.L_Brace) {

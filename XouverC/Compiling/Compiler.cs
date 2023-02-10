@@ -40,6 +40,8 @@ namespace XouverC.Compiling
         public List<FunctionInfo> funcInfos;
         private Stack<List<VarInfo>> scopes;
 
+        private List<FunctionInfo> constructors;
+
         private bool hasCompiled;
         public bool HasCompiled {
             get {
@@ -320,8 +322,10 @@ namespace XouverC.Compiling
 
                 instructs.AddRange(CompileExpr(we.condition));
 
-                if (!we.not)
-                    instructs.Add(Instructions.Not);
+                if (we.not)
+                    if (instructs.Last() != Instructions.Not)
+                        instructs.Add(Instructions.Not);
+                    else instructs.RemoveAt(instructs.Count - 1);
 
                 List<byte> bytes = new();
                 bytes.AddRange(CompileExpr(we.expr));
@@ -428,6 +432,13 @@ namespace XouverC.Compiling
                 instructs.Add(Instructions.Invoke);
                 instructs.AddRange(GetBytes(Array.IndexOf(compiledClasses.Values.ToArray(), this)));
             }
+            else if (expr is ASTNewExpr) {
+                string name = ((ASTNewExpr)expr).name;
+                Compiler c = compiledClasses[name];
+
+                instructs.Add(Instructions.New);
+                instructs.AddRange(GetBytes(Array.IndexOf(compiledClasses.Values.ToArray(), c)));
+            }
             else throw new NotImplementedException();
             return instructs.ToArray();
         }
@@ -462,6 +473,27 @@ namespace XouverC.Compiling
             info.type = expr.type;
 
             funcInfos.Add(info);
+        }
+
+        private void CompileConstructorASTExpr(ASTConstructor expr) {
+            FunctionInfo info = new();
+            info.signature = "className:" + className + "(";
+
+            if (expr.argCount > 0)
+                info.signature += expr.argTypes[0];
+            for (int i = 1; i < expr.argCount; i++) {
+                info.signature += ", " + expr.argTypes[i];
+            }
+
+            info.signature += ")#" + className;
+
+            info.argTypes = expr.argTypes;
+            info.argNames = expr.argNames;
+            info.exprs = expr.exprs;
+            info.modifiers = expr.modifiers;
+            info.type = className;
+
+            constructors.Add(info);
         }
 
         private int GetConstant(dynamic value) {
@@ -537,8 +569,13 @@ namespace XouverC.Compiling
                 foreach (Compiler c in compiledClasses.Values) {
                     if (c.className == t) return c.ResolveType(((ASTAccess)expr).right);
                 }
+            }
+            else if (expr is ASTNewExpr) {
+                string t = ((ASTNewExpr)expr).name;
 
-                throw new Exception();
+                foreach (Compiler c in compiledClasses.Values) {
+                    if (c.className == t) return c.className;
+                }
             }
             throw new Exception();
         }

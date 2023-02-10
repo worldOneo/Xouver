@@ -118,6 +118,19 @@ namespace XouverC.Parsing {
         }
     }
 
+    public class ASTConstructor : ASTExpr {
+        public int argCount;
+        public string[] argTypes;
+        public string[] argNames;
+        public string[] modifiers;
+
+        public ASTExpr[] exprs;
+    }
+
+    public class ASTNewExpr : ASTExpr {
+        public string name;
+    }
+
     public class ASTFuncCall : ASTExpr {
         public ASTExpr[] args;
         public string name;
