@@ -2,23 +2,25 @@
 #define RUNTIME_H
 
 #include <XNI.h>
-#include <class/xclass.h>
 #include <class/classManager.h>
+#include <class/xclass.h>
 
-#include <mapping/functionmap.h>
 #include <mapping/classmap.h>
+#include <mapping/functionmap.h>
 
 #include <memory/memory.h>
 
+#include <map>
+#include <span>
 #include <stack>
 #include <string>
-#include <map>
 
 class runtime {
-private:
+ private:
+	using Stack = std::vector<xvalue>;
 	XRT_Error currentError;
-	
-	memorymanager* memManager;
+
+	memorymanager memManager;
 	classmanager classManager;
 
 	bool _isHalted;
@@ -27,17 +29,17 @@ private:
 	std::stack<int> ptrs;
 	std::vector<std::string> functionCallVector;
 	std::stack<xclass*> classes;
-	std::stack<xvalue*> stack;
-	std::stack<xvalue**> localScopes;
+	std::stack<Stack> localScopes;
 	std::stack<int> lines;
 
-	std::map<std::string, void (__cdecl*) (void*)> nativeFunctions;
+	std::map<std::string, void(__cdecl*)(void*)> nativeFunctions;
 
 	function_map functionmap;
 	class_map classmap;
 
 	std::string exception;
-public:
+
+ public:
 	int funcOffset;
 	unsigned char* bytes;
 
@@ -59,9 +61,13 @@ public:
 	void throwError(std::string msg);
 
 	classmanager* getClassManager();
-	memorymanager* getMemoryManager();
+	memorymanager& getMemoryManager();
 	function_map* getFunctionMap();
-	xvalue* getStackTop();
+	xvalue& getStackTop();
+	void stackPush(xvalue v);
+	xvalue stackPop();
+	Stack& stack();
+	std::stack<Stack>& fullStack();
 
 	unsigned char advance();
 	int getArg();

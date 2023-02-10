@@ -2,12 +2,12 @@
 #define OBJECT_H
 
 #include <XNI.h>
-#include <string>
 #include <class/xclass.h>
+#include <string>
 
 struct object : _xobject {
 	xclass* classObj;
-	xvalue** obj;
+	xvalue* obj;
 };
 
 #endif
