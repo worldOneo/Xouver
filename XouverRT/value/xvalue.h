@@ -7,7 +7,6 @@
 struct xvalue {
 	valuetype type;
 	xvalues value;
-	int refcount = 0;
 
 	bool operator == (xvalue v) {
 		xvalues val = v.value;

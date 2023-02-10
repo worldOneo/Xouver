@@ -12,9 +12,9 @@ public:
 	void* rt;
 
 	int classOffset;
-	char* fullName;
+	std::string fullName;
 
-	xvalue** pool;
+	std::vector<xvalue> pool;
 	int poolSize;
 
 	int functionsSize;

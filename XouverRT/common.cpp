@@ -1,22 +1,21 @@
 #include "common.h"
 
-
 #define XRT
 #include <XNI.h>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
 
-#include <runtime/runtime.h>
 #include <opcodes.h>
+#include <runtime/runtime.h>
 
-#include <memory/memory.h>
 #include <mapping/functionmap.h>
+#include <memory/memory.h>
 
+#include <class/classmanager.h>
 #include <class/native/nativeclasses.h>
 #include <class/xclass.h>
-#include <class/classmanager.h>
 
 #include <memory/memory.h>
 
@@ -32,9 +31,10 @@ void* createRuntime(XNI_Error* error, unsigned char* bytes, int bytesCount) {
 		*error = XNI_Error::FAILED_RT_CREATION;
 		return nullptr;
 	}
-	
+
 	runtime* _rt = new runtime();
-	unsigned char* buffer = (unsigned char*)_rt->getMemoryManager()->allocate(sizeof(unsigned char*) * bytesCount);
+	unsigned char* buffer =
+			new unsigned char[sizeof(unsigned char*) * bytesCount];
 
 	if (buffer == nullptr) {
 		*error = XNI_Error::FAILED_RT_CREATION;
@@ -54,39 +54,39 @@ void* createRuntime(XNI_Error* error, unsigned char* bytes, int bytesCount) {
 runtime* _convertRT(void* rt) {
 	try {
 		return ((runtime*)rt);
-	}
-	catch (std::exception e) {
+	} catch (std::exception e) {
 		currentError = XNI_Error::ARGUMENT_NOT_RT;
 		return nullptr;
 	}
 }
-#define convertRT(_rt) if ((rt = _convertRT(_rt)) == nullptr) XNI_Error::POINTER_TO_NO_RT;
+#define convertRT(_rt)                   \
+	if ((rt = _convertRT(_rt)) == nullptr) \
+		XNI_Error::POINTER_TO_NO_RT;
 
 XNI_Error createClass(void* _rt, unsigned char* buffer, int bytesCount) {
 	convertRT(_rt);
 	int ptr = 0;
 
 	int classCount = BYTE_INT(buffer, &ptr);
-	memorymanager* mem = rt->getMemoryManager();
+	memorymanager& mem = rt->getMemoryManager();
 	function_map* fmap = rt->getFunctionMap();
-	
+
 	while (classCount > 0) {
-		xclass* c = (xclass*)mem->allocate(sizeof(xclass));
+		xclass c{};
 		int nameLen = BYTE_INT(buffer, &ptr);
-		c->fullName = (char*)mem->allocate(sizeof(char) * (nameLen + 1));
+		c.fullName = std::string(sizeof(char) * nameLen, '.');
 
 		for (int i = 0; i < nameLen; i++)
-			c->fullName[i] = buffer[ptr++];
-		c->fullName[nameLen] = '\0';
+			c.fullName[i] = buffer[ptr++];
 
-		c->scopeSize = BYTE_INT(buffer, &ptr);
-		c->functionsSize = BYTE_INT(buffer, &ptr);
-		c->functions = (int*)mem->allocate(sizeof(int));
-		for (int i = 0; i < c->functionsSize; i++) {
+		c.scopeSize = BYTE_INT(buffer, &ptr);
+		c.functionsSize = BYTE_INT(buffer, &ptr);
+		// unused c->functions = (int*)mem->allocate(sizeof(int));
+		for (int i = 0; i < c.functionsSize; i++) {
 			functioninfo info;
 
 			int signatureLen = BYTE_INT(buffer, &ptr);
-			info.signature = (char*)mem->allocate(sizeof(char) * (signatureLen + 1));
+			info.signature = std::string(sizeof(char) * signatureLen, '.');
 			for (int j = 0; j < signatureLen; j++)
 				info.signature[j] = buffer[ptr++];
 
@@ -95,23 +95,23 @@ XNI_Error createClass(void* _rt, unsigned char* buffer, int bytesCount) {
 
 			fmap->putFunction(info);
 		}
-		c->poolSize = BYTE_INT(buffer, &ptr);
-		c->pool = (xvalue**)mem->allocate(sizeof(xvalue*) * c->poolSize);
-		for (int i = 0; i < c->poolSize; i++) {
-			xvalue* val = (xvalue*)mem->allocate(sizeof(xvalue));
+		c.poolSize = BYTE_INT(buffer, &ptr);
+		c.pool = std::vector<xvalue>();
+		for (int i = 0; i < c.poolSize; i++) {
+			xvalue val{};
 
 			unsigned char type = buffer[ptr++];
 
 			if (type == 11) {
-				val->type = valuetype::INT;
-				val->value.i = BYTE_INT(buffer, &ptr);
-			}
-			else throw std::exception();
+				val.type = valuetype::INT;
+				val.value.i = BYTE_INT(buffer, &ptr);
+			} else
+				throw std::exception();
 
-			c->pool[i] = val;
+			c.pool.push_back(val);
 		}
 		int endOff = BYTE_INT(buffer, &ptr);
-		c->funcsOffset = ptr;
+		c.funcsOffset = ptr;
 		rt->getClassManager()->putClass(c);
 		ptr += endOff;
 
@@ -122,19 +122,28 @@ XNI_Error createClass(void* _rt, unsigned char* buffer, int bytesCount) {
 
 const char* resolveRTError(XRT_Error error) {
 	switch (error) {
-	case (XRT_Error::EXCEPTION_THROWN): return "Exception thrown";
-	case (XRT_Error::MEMORY_ALLOCATION_FAILED): return "Memory allocation failed";
-	case (XRT_Error::MEMORY_INITIALIZATION_FAILED): return "Memory initialization failed";
-	default: return "No error";
+		case (XRT_Error::EXCEPTION_THROWN):
+			return "Exception thrown";
+		case (XRT_Error::MEMORY_ALLOCATION_FAILED):
+			return "Memory allocation failed";
+		case (XRT_Error::MEMORY_INITIALIZATION_FAILED):
+			return "Memory initialization failed";
+		default:
+			return "No error";
 	}
 }
 const char* resolveXNIError(XNI_Error error) {
 	switch (error) {
-	case (XNI_Error::ARGUMENT_NOT_RT): return "Passed argumend is not a pointer to runtime";
-	case (XNI_Error::POINTER_TO_NO_RT): return "Passed argumend is not a pointer to runtime";
-	case (XNI_Error::UNEXPECTED_BYTE): return "Given bytes contain unexpected order";
-	case (XNI_Error::NO_XNI_ERROR): return "No error";
-	default: return "Inalid XNI_Error argument";
+		case (XNI_Error::ARGUMENT_NOT_RT):
+			return "Passed argumend is not a pointer to runtime";
+		case (XNI_Error::POINTER_TO_NO_RT):
+			return "Passed argumend is not a pointer to runtime";
+		case (XNI_Error::UNEXPECTED_BYTE):
+			return "Given bytes contain unexpected order";
+		case (XNI_Error::NO_XNI_ERROR):
+			return "No error";
+		default:
+			return "Inalid XNI_Error argument";
 	}
 }
 
@@ -162,7 +171,9 @@ void callFunction(void* _rt, int index) {
 	rt->callFunction(index);
 }
 
-void runRuntime(void* _rt, const char* mainClass, const char* mainFuncSignature) {
+void runRuntime(void* _rt,
+								const char* mainClass,
+								const char* mainFuncSignature) {
 	convertRT(_rt);
 
 	xclass* c = rt->getClassManager()->getClass(mainClass);
