@@ -298,8 +298,11 @@ namespace XouverC.Compiling
 
                 instructs.AddRange(CompileExpr(ifExpr.condition));
 
-                if (!ifExpr.not)
-                    instructs.Add(Instructions.Not);
+                if (ifExpr.not)
+                    if (instructs.Last() != Instructions.Not)
+                        instructs.Add(Instructions.Not);
+                    else instructs.RemoveAt(instructs.Count - 1);
+                    
 
                 List<byte> bytes = new();
                 bytes.AddRange(CompileExpr(ifExpr.expr));
@@ -378,14 +381,16 @@ namespace XouverC.Compiling
                     case "==":
                         instructs.Add(Instructions.IfEq);
                         break;
+                    case "<":
+                        instructs.Add(Instructions.IfGt);
+                        instructs.Add(Instructions.Not);
+                        break;
                     case ">":
                         instructs.Add(Instructions.IfGt);
                         break;
-                    case "<":
-                        instructs.Add(Instructions.IfLt);
-                        break;
                     case "<=":
-                        instructs.Add(Instructions.IfLq);
+                        instructs.Add(Instructions.IfGq);
+                        instructs.Add(Instructions.Not);
                         break;
                     case ">=":
                         instructs.Add(Instructions.IfGq);

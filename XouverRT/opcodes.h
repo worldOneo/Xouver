@@ -8,9 +8,7 @@
 #define OP_JMP				(unsigned char) 5
 #define OP_IFEQ				(unsigned char) 6
 #define OP_IFGT				(unsigned char) 7
-#define OP_IFLT				(unsigned char) 8
 #define OP_IFGQ				(unsigned char) 9
-#define OP_IFLQ				(unsigned char) 10
 #define OP_NOT				(unsigned char) 11
 #define OP_JIF				(unsigned char) 12
 #define OP_CALL				(unsigned char) 13	

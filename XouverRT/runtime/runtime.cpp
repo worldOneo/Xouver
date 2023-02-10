@@ -354,30 +354,6 @@ void runtime::run(xclass* mainClass, std::string func) {
 				stackPush(v);
 				break;
 			}
-			case OP_IFLT: {
-				xvalue rval = stackPop();
-				xvalue& lval = getStackTop();
-
-				xvalue v{};
-				v.type = valuetype::BOOL;
-				if (rval.type == lval.type) {
-					switch (lval.type) {
-						case valuetype::INT:
-							v.value.b = lval.value.i < rval.value.i;
-							break;
-						case valuetype::FLOAT:
-							v.value.b = lval.value.f < rval.value.f;
-							break;
-						default:
-							v.value.b = false;
-							break;
-					}
-				} else
-					v.value.b = false;
-
-				stackPush(v);
-				break;
-			}
 			case OP_IFGT: {
 				xvalue& rval = getStackTop();
 				xvalue& lval = getStackTop();
@@ -391,30 +367,6 @@ void runtime::run(xclass* mainClass, std::string func) {
 							break;
 						case valuetype::FLOAT:
 							v.value.b = lval.value.f > rval.value.f;
-							break;
-						default:
-							v.value.b = false;
-							break;
-					}
-				} else
-					v.value.b = false;
-
-				stackPush(v);
-				break;
-			}
-			case OP_IFLQ: {
-				xvalue& rval = getStackTop();
-				xvalue& lval = getStackTop();
-
-				xvalue v{};
-				v.type = valuetype::BOOL;
-				if (rval.type == lval.type) {
-					switch (lval.type) {
-						case valuetype::INT:
-							v.value.b = lval.value.i <= rval.value.i;
-							break;
-						case valuetype::FLOAT:
-							v.value.b = lval.value.f <= rval.value.f;
 							break;
 						default:
 							v.value.b = false;
@@ -469,7 +421,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 
 				if (b.type != valuetype::BOOL)
 					break;
-				if (b.value.b == true)
+				if (b.value.b != true)
 					ptrs.top() += pos;
 				break;
 			}

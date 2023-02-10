@@ -15,9 +15,7 @@ namespace XouverC.Compiling {
 
         public static byte IfEq = 6;
         public static byte IfGt = 7;
-        public static byte IfLt = 8;
         public static byte IfGq = 9;
-        public static byte IfLq = 10;
         public static byte Not = 11;
 
         public static byte JIf = 12; 
