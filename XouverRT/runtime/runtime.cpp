@@ -78,6 +78,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 
 	while (!_isHalted) {
 		unsigned char inst = advance();
+		std::cout << stack().size() << std::endl;
 		switch (inst) {
 			case OP_ADD: {
 				xvalue val2 = stackPop();
@@ -322,7 +323,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 			}
 			case OP_IFEQ: {
 				xvalue rval = stackPop();
-				xvalue& lval = getStackTop();
+				xvalue lval = stackPop();
 
 				xvalue v{};
 				v.type = valuetype::BOOL;
@@ -355,8 +356,9 @@ void runtime::run(xclass* mainClass, std::string func) {
 				break;
 			}
 			case OP_IFGT: {
-				xvalue& rval = getStackTop();
-				xvalue& lval = getStackTop();
+				xvalue rval = stackPop();
+				xvalue lval = stackPop();
+				std::cout << rval.value.i << " > " << lval.value.i << "\n";
 
 				xvalue v{};
 				v.type = valuetype::BOOL;
@@ -379,8 +381,9 @@ void runtime::run(xclass* mainClass, std::string func) {
 				break;
 			}
 			case OP_IFGQ: {
-				xvalue& rval = getStackTop();
-				xvalue& lval = getStackTop();
+				xvalue rval = stackPop();
+				xvalue lval = stackPop();
+				std::cout << rval.value.i << " >= " << lval.value.i << "\n";
 
 				xvalue v = xvalue();
 				v.type = valuetype::BOOL;
@@ -403,7 +406,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 				break;
 			}
 			case OP_NOT: {
-				xvalue b = getStackTop();
+				xvalue b = stackPop();
 
 				if (b.type != valuetype::BOOL)
 					break;
@@ -506,7 +509,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 			}
 			case OP_STORE: {
 				int pos = getArg();
-				xvalue val = getStackTop();
+				xvalue val = stackPop();
 
 				std::cout << "STORE " << val.value.i << " at " << pos << " on "
 									<< ptrs.top() << "\n";
@@ -514,7 +517,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 				// val->refcount++;
 				/*if (((runtime*)rt)->scope[pos] != nullptr)
 					((runtime*)rt)->scope[pos]->refcount--;*/
-				localScopes.top()[pos] = val;
+				stack()[pos] = val;
 				break;
 			}
 			case OP_CLS: {
@@ -599,7 +602,7 @@ void runtime::callFunction(int id) {
 		int ptr = currentClass->funcsOffset + info.pointer;
 		Stack scope;
 		int scopeSize = BYTE_INT(bytes, &ptr);
-		scope = Stack{};
+		scope = Stack{(std::size_t)scopeSize};
 
 		int argsCount = BYTE_INT(bytes, &ptr);
 		for (int i = argsCount - 1; i >= 0; i--) {
