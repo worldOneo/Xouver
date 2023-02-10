@@ -1,11 +1,13 @@
 #ifndef FUNCTIONMAP_H
 #define FUNCTIONMAP_H
 
+#include <string>
 #include <vector>
 
+
 typedef struct s_functioninfo {
-	char* signature;
 	int pointer;
+	std::string signature;
 } functioninfo;
 
 class function_map {
