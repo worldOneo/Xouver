@@ -61,11 +61,14 @@ namespace XouverC.Parsing {
 
             int nline = current.line;
             while (current.type != TokenType.R_Paren) {
-                do {
-                    if (current.type == TokenType.Eof)
-                        throw new XException("Expected ')' to close '(' on line " + nline);
-                    args.Add(ParseExpr());
-                } while (current.type == TokenType.Comma);
+                if (current.type == TokenType.Eof)
+                    throw new XException("Expected ')' to close '(' on line " + nline);
+
+                args.Add(ParseExpr());
+
+                if (current.type == TokenType.Comma) NextToken();
+                else if (current.type == TokenType.R_Paren) break;
+                else throw new Exception();
             }
 
             NextToken();

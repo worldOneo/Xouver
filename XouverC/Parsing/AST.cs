@@ -66,6 +66,14 @@ namespace XouverC.Parsing {
 
     public class ASTBlock : ASTExpr {
         public ASTExpr[] exprs;
+
+        public override string ToString() {
+            string str = "";
+
+            foreach (ASTExpr e in exprs) str += e.ToString() + "\n";
+
+            return str;
+        }
     }
 
     public class ASTDef : ASTExpr {
@@ -106,7 +114,15 @@ namespace XouverC.Parsing {
         public ASTExpr[] exprs;
 
         public override string ToString() {
-            string str = name + "():\n";
+            string str = name + "(";
+
+            for (int i = 0; i < argTypes.Length; i++) {
+                str += argTypes[i] + " " + argNames[i];
+
+                if (i < argTypes.Length - 1) str += ", ";
+            }
+
+            str += "):\n";
             
             foreach (ASTExpr e in exprs) {
                 str += e.ToString() + "\n";
@@ -134,6 +150,14 @@ namespace XouverC.Parsing {
     public class ASTFuncCall : ASTExpr {
         public ASTExpr[] args;
         public string name;
+
+        public override string ToString() {
+            string str = name + "( ";
+
+            foreach (ASTExpr e in args) str += e.ToString() + " ";
+
+            return str + " )";
+        }
     }
 
     public class ASTCondition : ASTExpr { }

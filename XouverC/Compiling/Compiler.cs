@@ -79,7 +79,6 @@ namespace XouverC.Compiling
             for (int i = 0; i < className.Length; i++)
                 content.Add(Convert.ToByte(className[i]));
 
-            classes.Remove(fullName);
             compiledClasses.Add(fullName, this); // TODO: path + className
 
             foreach (ASTExpr expr in exprs)
@@ -192,7 +191,6 @@ namespace XouverC.Compiling
                 ASTFuncCall astCall = (ASTFuncCall)expr;
 
                 List<string> argTypes = new();
-
                 for (int i = 0; i < astCall.args.Length; i++) {
                     argTypes.Add(ResolveType(astCall.args[i]));
                     instructs.AddRange(CompileExpr(astCall.args[i]));
@@ -422,15 +420,7 @@ namespace XouverC.Compiling
                 instructs.AddRange(ResolveIdent(((ASTIdentifier)expr)));
             }
             else if (expr is ASTAccess) {
-                ASTAccess ac = (ASTAccess)expr;
-
-                string t = ResolveType(ac.left);
-
-                Compiler c = compiledClasses[t];
-
-                instructs.Add(Instructions.Invoke);
-                instructs.AddRange(GetBytes(Array.IndexOf(compiledClasses.Values.ToArray(), c)));
-                instructs.AddRange(c.CompileExpr(ac.right));
+                instructs.AddRange(ResolveAccess(this, (ASTAccess)expr));
                 instructs.Add(Instructions.Invoke);
                 instructs.AddRange(GetBytes(Array.IndexOf(compiledClasses.Values.ToArray(), this)));
             }
@@ -493,10 +483,90 @@ namespace XouverC.Compiling
             info.argTypes = expr.argTypes;
             info.argNames = expr.argNames;
             info.exprs = expr.exprs;
+
             info.modifiers = expr.modifiers;
             info.type = className;
 
             constructors.Add(info);
+        }
+
+        private byte[] ResolveAccess(Compiler context, ASTAccess ac) {
+            List<byte> instructs = new();
+            string t = context.ResolveType(ac.left);
+
+            Compiler? ncontext = null;
+            foreach (Compiler cmp in compiledClasses.Values) {
+                if (cmp.className == t) ncontext = cmp;
+            }
+
+            if (ncontext == null) throw new Exception();
+
+            instructs.AddRange(ResolveAccessRight(ncontext, ac));
+            instructs.AddRange(ResolveAccessLeft(ncontext, ac));
+            return instructs.ToArray();
+        }
+
+        private byte[] ResolveAccessRight(Compiler context, ASTAccess ac) {
+            List<byte> instructs = new();
+
+            if (ac.right is ASTAccess) {
+                instructs.AddRange(ResolveAccessRight(context, (ASTAccess)ac.right));
+            }
+            else if (ac.right is ASTFuncCall) {
+                ASTFuncCall call = (ASTFuncCall)ac.right;
+
+                foreach (ASTExpr e in call.args)
+                    instructs.AddRange(CompileExpr(e));
+            }
+            else throw new Exception();
+
+            if(ac.left is ASTFuncCall) {
+                ASTFuncCall call = (ASTFuncCall)ac.left;
+
+                foreach (ASTExpr e in call.args)
+                    instructs.AddRange(CompileExpr(e));
+            }
+
+            return instructs.ToArray();
+        }
+
+        private byte[] ResolveAccessLeft(Compiler context, ASTAccess ac) {
+            List<byte> instructs = new();
+
+            if (ac.left is ASTFuncCall) {
+                ASTFuncCall call = (ASTFuncCall)ac.left;
+
+                List<string> argTypes = new();
+
+                foreach (ASTExpr e in call.args)
+                    argTypes.Add(ResolveType(e));
+
+                instructs.Add(Instructions.Call);
+                int fid = context.ResolveFunction(call.name, argTypes.ToArray());
+                instructs.AddRange(GetBytes(fid));
+
+                foreach (Compiler cmp in compiledClasses.Values) {
+                    if (cmp.className == context.funcInfos[fid].type)
+                        context = cmp;
+                }
+            }
+            else if (ac.left is ASTIdentifier) instructs.AddRange(context.ResolveIdent((ASTIdentifier) ac.left));
+
+            if (ac.right is ASTAccess) ResolveAccess(context, ac);
+            else if (ac.right is ASTFuncCall) {
+                ASTFuncCall call = (ASTFuncCall)ac.right;
+
+                List<string> argTypes = new();
+
+                foreach (ASTExpr e in call.args)
+                    argTypes.Add(ResolveType(e));
+
+                instructs.Add(Instructions.Call);
+                instructs.AddRange(GetBytes(context.ResolveFunction(call.name, argTypes.ToArray())));
+            }
+            else throw new Exception();
+
+            return instructs.ToArray();
         }
 
         private int GetConstant(dynamic value) {
@@ -529,14 +599,10 @@ namespace XouverC.Compiling
             else if (expr is ASTFuncCall) {
                 ASTFuncCall call = (ASTFuncCall)expr;
 
-                List<string> argTypes = new();
-
-                foreach (ASTExpr arg in call.args)
-                    argTypes.Add(ResolveType(arg));
-
-                int i = ResolveFunction(call.name, argTypes.ToArray());
-
-                return funcInfos[i].type;
+                for (int i = 0; i < funcInfos.Count; i++) {
+                    if (funcInfos[i].name == call.name)
+                        return funcInfos[i].type;
+                }
             }
             else if (expr is ASTIdentifier) {
                 ASTIdentifier ident = (ASTIdentifier)expr;
@@ -580,17 +646,20 @@ namespace XouverC.Compiling
                     if (c.className == t) return c.className;
                 }
             }
+            Console.WriteLine(className + ": " + ((ASTIdentifier)expr).value + " - " + expr.line);
             throw new Exception();
         }
 
         private byte[] ResolveIdent(ASTIdentifier ident) {
             List<byte> instructs = new();
 
-            foreach (VarInfo info in scopes.Peek()) {
-                if (info.name == ident.value) {
-                    instructs.Add(Instructions.Load);
-                    instructs.AddRange(GetBytes(info.pointer));
-                    return instructs.ToArray();
+            if (scopes.Count > 0) {
+                foreach (VarInfo info in scopes.Peek()) {
+                    if (info.name == ident.value) {
+                        instructs.Add(Instructions.Load);
+                        instructs.AddRange(GetBytes(info.pointer));
+                        return instructs.ToArray();
+                    }
                 }
             }
 
@@ -601,18 +670,14 @@ namespace XouverC.Compiling
                     return instructs.ToArray();
                 }
 
-            foreach (string imp in imports) {
-                string[] str = imp.Split('.');
+            foreach (Compiler c in classes.Values) {
+                if (c.className == ident.value) {
+                    if (!c.HasCompiled) c.Compile();
 
-                if (str.Last() == ident.value) {
+                    int index = Array.IndexOf(compiledClasses.Values.ToArray(), c);
                     instructs.Add(Instructions.Invoke);
-                    if (compiledClasses.ContainsKey(ident.value)) {
-                        int index = Array.IndexOf(compiledClasses.Keys.ToArray(), ident.value);
-
-                        instructs.Add(Instructions.Invoke);
-                        instructs.AddRange(GetBytes(index));
-                        return instructs.ToArray();
-                    }
+                    instructs.AddRange(GetBytes(index));
+                    return instructs.ToArray();
                 }
             }
 
