@@ -14,7 +14,7 @@ memorymanager::memorymanager(void* rt) {
 	this->rt = rt;
 }
 
-xobject memorymanager::allocate() {
+object& memorymanager::allocate() {
 	auto& memory = getYoung();
 	if (memory.size() == youngGenerationSize) {
 		auto rt = (runtime*)this->rt;
@@ -22,7 +22,7 @@ xobject memorymanager::allocate() {
 		/* GC */
 	}
 	memory.push_back({});	 // TODO: Object creation
-	return (xobject)&memory[memory.size() - 1];
+	return memory[memory.size() - 1];
 }
 
 memorymanager::~memorymanager() {}

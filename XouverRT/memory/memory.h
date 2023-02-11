@@ -27,7 +27,7 @@ class memorymanager {
 
  public:
 	memorymanager(void* rt);
-	xobject allocate();
+	object& allocate();
 	~memorymanager();
 };
 
