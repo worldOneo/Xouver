@@ -48,7 +48,7 @@ extern "C" {
 
 	*/
 
-	extern enum XNI_Error {
+	enum XNI_Error {
 		NO_XNI_ERROR = 0,
 		FAILED_RT_CREATION = 178,
 		ARGUMENT_NOT_RT = 122,
@@ -71,6 +71,7 @@ extern "C" {
 	};
 
 	extern void* createRuntime(XNI_Error* error, unsigned char* bytes, int bytesCount);
+	extern void freeRuntime(void* _rt);
 	XNI_Error createClass(void* _rt, unsigned char* bytes, int bytesCount);
 	extern const char* resolveRTError(XRT_Error error);
 	extern const char* resolveXNIError(XNI_Error error);

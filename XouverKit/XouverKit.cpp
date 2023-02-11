@@ -8,8 +8,12 @@
 
 #define BYTE_INT(bytes, pos)		(bytes[*pos] << 24) | (bytes[*pos + 1] << 16) | (bytes[*pos + 2] << 8) | (bytes[*pos + 3]); *pos += 4;
 
-int main() {
-	FILE* file = fopen("D:\\source\\repos\\Xouver\\Test.xvr", "rb");
+int main(int argc, char** argv) {
+	if (argc < 2) {
+		std::cout << "Usage: " << argv[0] << " application.xvr" << std::endl;
+		return 1;
+	}
+	FILE* file = fopen(argv[1], "rb");
 
 	if (file == NULL) throw std::exception();
 
@@ -75,7 +79,7 @@ int main() {
 		delete[] msg;
 	}*/
 
-	delete rt;
+	freeRuntime(rt);
 	delete[] buffer;
 	return 0;
 }

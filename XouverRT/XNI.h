@@ -29,7 +29,7 @@ extern "C" {
 	typedef bool xbool;
 	typedef char xchar;
 
-	typedef struct _xobject {};
+	struct _xobject {};
 	typedef _xobject* xobject;
 
 	typedef union _xvalues {
@@ -72,6 +72,7 @@ extern "C" {
 
 //#ifdef XRT {
 	void* createRuntime(XNI_Error* error, unsigned char* bytes, int bytesCount);
+	void freeRuntime(void* _rt);
 	XNI_Error createClass(void* _rt, unsigned char* bytes, int bytesCount);
 	bool xniVerify(char c);
 	const char* resolveRTError(XRT_Error error);

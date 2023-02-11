@@ -2,6 +2,7 @@
 
 #define XRT
 #include <XNI.h>
+#include <cstring>
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -204,6 +205,11 @@ void getExceptionMessage(void* _rt, char** outMsg) {
 	for (int i = 0; i < rt->getException().size(); i++) {
 		(*outMsg)[i] = rt->getException()[i];
 	}
+}
+
+void freeRuntime(void* _rt) {
+	convertRT(_rt);
+	delete rt;
 }
 
 /*const xvalues& getStackTop(void* _rt) {
