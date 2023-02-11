@@ -11,57 +11,14 @@
 
 #include <opcodes.h>
 
+#include <logging.h>
+
 #define BYTES_END (unsigned char)0x94
 
 #define MAP_BEGIN (unsigned char)0x74
 #define POOL_BEGIN (unsigned char)0x33
 
-runtime::runtime() : memManager{this} {
-	/*this->bytes = new unsigned char[bytesCount];
-	for (int i = 0; i < bytesCount; i++) {
-		this->bytes[i] = bytes[i];
-	}
-
-	xclass* c = new xclass();
-	int ptr = 0;
-
-	int scopeCount = BYTE_INT(bytes, &ptr);
-	scope = (xvalue**)malloc(sizeof(xvalue*) * scopeCount);
-
-	int funcCount = BYTE_INT(bytes, &ptr);
-	for (int i = 0; i < funcCount; i++) {
-		functioninfo finfo = {};
-		int signatureLen = BYTE_INT(bytes, &ptr);
-		finfo.signature = (char*) allocate(sizeof(char) * (signatureLen+1));
-
-		for (int i = 0; i < signatureLen; i++) {
-			finfo.signature[i] = (char) bytes[ptr++];
-		}
-		finfo.signature[signatureLen] = '\0';
-
-		finfo.pointer = BYTE_INT(bytes, &ptr);
-
-		functionmap.putFunction(finfo);
-	}
-
-	int poolCount = BYTE_INT(bytes, &ptr);
-	this->pool = (xvalue**) malloc(sizeof(xvalue*) * poolCount);
-
-	for (int i = 0; i < poolCount; i++) {
-		xvalue* val = (xvalue*)allocate(sizeof(xvalue));
-
-		unsigned char type = bytes[ptr++];
-
-		if (type == 11) {
-			val->type = valuetype::INT;
-			val->value.i = BYTE_INT(bytes, &ptr);
-		}
-		else throw std::exception();
-
-		pool[i] = val;
-	}
-	funcsOffset = ptr;*/
-}
+runtime::runtime() : memManager{this} {}
 
 function_map* runtime::getFunctionMap() {
 	return &functionmap;
@@ -78,13 +35,13 @@ void runtime::run(xclass* mainClass, std::string func) {
 
 	while (!_isHalted) {
 		unsigned char inst = advance();
-		std::cout << stack().size() << std::endl;
+		debugPrint("Stack size: #\n", stack().size());
 		switch (inst) {
 			case OP_ADD: {
 				xvalue val2 = stackPop();
 				xvalue val1 = stackPop();
 
-				std::cout << val1.value.i << " + " << val2.value.i << "\n";
+				debugPrint("# + #\n", val1.value.i, val2.value.i);
 
 				switch (val1.type) {
 					case valuetype::FLOAT: {
@@ -287,8 +244,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 				int constPos = getArg();
 				xvalue v = currentClass->pool[constPos];
 
-				// std::cout << "CLOAD " << v->value.i << " from " << constPos << " on "
-				// << pos << "\n";
+				debugPrint("CLOAD # from # on #\n", v.value.i, constPos, pos);
 
 				stackPush(v);
 				break;
@@ -358,7 +314,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 			case OP_IFGT: {
 				xvalue rval = stackPop();
 				xvalue lval = stackPop();
-				std::cout << rval.value.i << " > " << lval.value.i << "\n";
+				debugPrint("# > #\n", lval.value.i, rval.value.i);
 
 				xvalue v{};
 				v.type = valuetype::BOOL;
@@ -383,7 +339,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 			case OP_IFGQ: {
 				xvalue rval = stackPop();
 				xvalue lval = stackPop();
-				std::cout << rval.value.i << " >= " << lval.value.i << "\n";
+				debugPrint("# >= #\n", lval.value.i, rval.value.i);
 
 				xvalue v = xvalue();
 				v.type = valuetype::BOOL;
@@ -501,8 +457,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 				int pos = getArg();
 				xvalue val = localScopes.top()[pos];
 
-				std::cout << "LOAD " << val.value.i << " in " << pos << " on "
-									<< ptrs.top() << "\n";
+				debugPrint("LOAD # in # on #\n", val.value.i, pos, ptrs.top());
 
 				stackPush(val);
 				break;
@@ -511,8 +466,7 @@ void runtime::run(xclass* mainClass, std::string func) {
 				int pos = getArg();
 				xvalue val = stackPop();
 
-				std::cout << "STORE " << val.value.i << " at " << pos << " on "
-									<< ptrs.top() << "\n";
+				debugPrint("STORE # at # on #\n", val.value.i, pos, ptrs.top());
 
 				// val->refcount++;
 				/*if (((runtime*)rt)->scope[pos] != nullptr)
@@ -580,7 +534,7 @@ void runtime::halt() {
 
 void runtime::putNativeFunction(std::string signature, void (*fn)(void*)) {
 	nativeFunctions.insert(
-			std::pair<std::string, void(__cdecl*)(void*)>(signature, fn));
+			std::pair<std::string, void(_xcdecl*)(void*)>(signature, fn));
 }
 
 void runtime::setClass(xclass* c) {

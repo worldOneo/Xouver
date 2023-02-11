@@ -2,7 +2,7 @@
 #define RUNTIME_H
 
 #include <XNI.h>
-#include <class/classManager.h>
+#include <class/classmanager.h>
 #include <class/xclass.h>
 
 #include <mapping/classmap.h>
@@ -14,6 +14,12 @@
 #include <span>
 #include <stack>
 #include <string>
+
+#ifdef __GNUC__
+#define _xcdecl __attribute__((__cdecl__))
+#else
+#define _xcdecl __cdecl
+#endif
 
 class runtime {
  private:
@@ -32,7 +38,7 @@ class runtime {
 	std::stack<Stack> localScopes;
 	std::stack<int> lines;
 
-	std::map<std::string, void(__cdecl*)(void*)> nativeFunctions;
+	std::map<std::string, void(_xcdecl*)(void*)> nativeFunctions;
 
 	function_map functionmap;
 	class_map classmap;

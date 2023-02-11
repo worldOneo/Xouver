@@ -1,7 +1,6 @@
 #ifndef CLASS_MANAGER_H
 #define CLASS_MANAGER_H
 
-#include <optional>
 #include <string>
 #include <vector>
 
