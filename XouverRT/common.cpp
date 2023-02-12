@@ -106,7 +106,11 @@ XNI_Error createClass(void* _rt, unsigned char* buffer, int bytesCount) {
 			if (type == 11) {
 				val.type = valuetype::INT;
 				val.value.i = BYTE_INT(buffer, &ptr);
-			} else
+			} else if (type == 12) {
+				val.type = valuetype::FLOAT;
+				val.value.f = BYTE_FLOAT(buffer, &ptr);
+			}
+			else
 				throw std::exception();
 
 			c.pool.push_back(val);
@@ -217,3 +221,54 @@ void freeRuntime(void* _rt) {
 
 	return rt->getStackTop();
 }*/
+
+
+int _byteint(unsigned char* bytes, int* pos) {
+	unsigned char* buffer = new unsigned char[4];
+
+	int n = 1;
+	if (*(char*)&n != 1) {
+		buffer[0] = bytes[*pos];
+		buffer[1] = bytes[*pos + 1];
+		buffer[2] = bytes[*pos + 2];
+		buffer[3] = bytes[*pos + 3];
+	} else {
+		buffer[0] = bytes[*pos + 3];
+		buffer[1] = bytes[*pos + 2];
+		buffer[2] = bytes[*pos + 1];
+		buffer[3] = bytes[*pos];
+	}
+
+	*pos += 4;
+
+	int val;
+	memcpy(&val, buffer, sizeof(int));
+	delete[] buffer;
+
+	return val;
+}
+
+float _bytefloat(unsigned char* bytes, int* pos) {
+	unsigned char* buffer = new unsigned char[4];
+
+	float n = 1;
+	if (*(char*)&n == 1) {
+		buffer[0] = bytes[*pos];
+		buffer[1] = bytes[*pos + 1];
+		buffer[2] = bytes[*pos + 2];
+		buffer[3] = bytes[*pos + 3];
+	} else {
+		buffer[0] = bytes[*pos + 3];
+		buffer[1] = bytes[*pos + 2];
+		buffer[2] = bytes[*pos + 1];
+		buffer[3] = bytes[*pos];
+	}
+
+	*pos += 4;
+
+	float val;
+	memcpy(&val, buffer, sizeof(float));
+	delete[] buffer;
+
+	return val;
+}

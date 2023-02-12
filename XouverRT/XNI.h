@@ -1,6 +1,6 @@
 /*
 
-	Xouve Native Integrit Header
+	Xouve Native Integrity Header
 
 	This header contains functions and types
 	which are used by the Xouver Runtime.

@@ -41,8 +41,8 @@ void runtime::run(xclass* mainClass, std::string func) {
 				xvalue val2 = stackPop();
 				xvalue val1 = stackPop();
 
-				debugPrint("# + #\n", val1.value.i, val2.value.i);
-
+				debugPrint("INT: # + #\n", val1.value.i, val2.value.i);
+				debugPrint("FLOAT: # + #\n", val1.value.f, val2.value.f);
 				switch (val1.type) {
 					case valuetype::FLOAT: {
 						float v1 = val1.value.f;
@@ -244,7 +244,10 @@ void runtime::run(xclass* mainClass, std::string func) {
 				int constPos = getArg();
 				xvalue v = currentClass->pool[constPos];
 
-				debugPrint("CLOAD # from # on #\n", v.value.i, constPos, pos);
+				if (v.type == valuetype::INT)
+					debugPrint("CLOAD # from # on #\n", v.value.i, constPos, pos);
+				else if (v.type == valuetype::FLOAT)
+					debugPrint("CLOAD # from # on #\n", v.value.f, constPos, pos);
 
 				stackPush(v);
 				break;

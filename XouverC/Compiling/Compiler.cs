@@ -130,6 +130,10 @@ namespace XouverC.Compiling
                     content.Add(11);
                     content.AddRange(GetBytes((int)constant));
                 }
+                else if (constant is float) {
+                    content.Add(12);
+                    content.AddRange(GetBytes((float)constant));
+                }
             }
 
             content.AddRange(GetBytes(instructions.Count));
